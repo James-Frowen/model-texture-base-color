@@ -13,7 +13,6 @@ namespace model_texture_base_color
     public partial class ColorForm : Form
     {
         Button colorButton;
-        Form1 form;
         Color Color {
             get { return this.colorButton.BackColor; }
             set {
@@ -44,11 +43,11 @@ namespace model_texture_base_color
             set { this.Color = Color.FromArgb(value, this.R, this.G, this.B); }
 
         }
-        public ColorForm(Form1 form, Button colorButton)
+        public ColorForm(Button colorButton)
         {
             InitializeComponent();
+            this.FormBorderStyle = FormBorderStyle.None;
             this.colorButton = colorButton;
-            this.form = form;
             this.textBox1.Text = this.Color.R.ToString();
             this.textBox2.Text = this.Color.G.ToString(); 
             this.textBox3.Text = this.Color.B.ToString();
@@ -94,8 +93,7 @@ namespace model_texture_base_color
 
         private void okButton_Click(object sender, EventArgs e)
         {
-            this.form.colorForm = null;
-            this.Close();
+            this.Hide();
         }
     }
 }

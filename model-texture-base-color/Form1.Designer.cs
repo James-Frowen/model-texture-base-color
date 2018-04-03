@@ -40,10 +40,10 @@
             this.saveResultButton = new System.Windows.Forms.Button();
             this.createResultButton = new System.Windows.Forms.Button();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.colorDialog = new System.Windows.Forms.ColorDialog();
+            this.minColorDialog = new System.Windows.Forms.ColorDialog();
             this.label1 = new System.Windows.Forms.Label();
-            this.colorButton = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.minColorButton = new System.Windows.Forms.Button();
+            this.minColorFormButton = new System.Windows.Forms.Button();
             this.alphaOnlyToggle = new System.Windows.Forms.CheckBox();
             this.tiledTextureToggle = new System.Windows.Forms.CheckBox();
             this.scaleY = new System.Windows.Forms.TextBox();
@@ -51,6 +51,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.openResultDialog = new System.Windows.Forms.OpenFileDialog();
             this.label3 = new System.Windows.Forms.Label();
+            this.maxColorFormButton = new System.Windows.Forms.Button();
+            this.label4 = new System.Windows.Forms.Label();
+            this.maxColorButton = new System.Windows.Forms.Button();
+            this.maxColorDialog = new System.Windows.Forms.ColorDialog();
             ((System.ComponentModel.ISupportInitialize)(this.outlineBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.textureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.resultBox)).BeginInit();
@@ -106,7 +110,7 @@
             // 
             // resultBox
             // 
-            this.resultBox.Location = new System.Drawing.Point(280, 76);
+            this.resultBox.Location = new System.Drawing.Point(280, 96);
             this.resultBox.Name = "resultBox";
             this.resultBox.Size = new System.Drawing.Size(512, 512);
             this.resultBox.TabIndex = 5;
@@ -142,29 +146,28 @@
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(631, 46);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(81, 13);
+            this.label1.Size = new System.Drawing.Size(74, 13);
             this.label1.TabIndex = 8;
-            this.label1.Text = "Threshold Color";
+            this.label1.Text = "Threshold Min";
             // 
-            // colorButton
+            // minColorButton
             // 
-            this.colorButton.Location = new System.Drawing.Point(718, 39);
-            this.colorButton.Name = "colorButton";
-            this.colorButton.Size = new System.Drawing.Size(23, 23);
-            this.colorButton.TabIndex = 7;
-            this.colorButton.Text = "color";
-            this.colorButton.UseVisualStyleBackColor = true;
-            this.colorButton.Click += new System.EventHandler(this.colorButton_Click);
+            this.minColorButton.Location = new System.Drawing.Point(718, 39);
+            this.minColorButton.Name = "minColorButton";
+            this.minColorButton.Size = new System.Drawing.Size(23, 23);
+            this.minColorButton.TabIndex = 7;
+            this.minColorButton.UseVisualStyleBackColor = true;
+            this.minColorButton.Click += new System.EventHandler(this.minColorButton_Click);
             // 
-            // button1
+            // minColorFormButton
             // 
-            this.button1.Location = new System.Drawing.Point(747, 41);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(45, 23);
-            this.button1.TabIndex = 9;
-            this.button1.Text = "RGBA";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.minColorFormButton.Location = new System.Drawing.Point(747, 41);
+            this.minColorFormButton.Name = "minColorFormButton";
+            this.minColorFormButton.Size = new System.Drawing.Size(45, 23);
+            this.minColorFormButton.TabIndex = 9;
+            this.minColorFormButton.Text = "RGBA";
+            this.minColorFormButton.UseVisualStyleBackColor = true;
+            this.minColorFormButton.Click += new System.EventHandler(this.minColorFormButton_Click);
             // 
             // alphaOnlyToggle
             // 
@@ -181,6 +184,8 @@
             // 
             this.tiledTextureToggle.AutoSize = true;
             this.tiledTextureToggle.CheckAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.tiledTextureToggle.Checked = true;
+            this.tiledTextureToggle.CheckState = System.Windows.Forms.CheckState.Checked;
             this.tiledTextureToggle.Location = new System.Drawing.Point(283, 45);
             this.tiledTextureToggle.Name = "tiledTextureToggle";
             this.tiledTextureToggle.Size = new System.Drawing.Size(49, 17);
@@ -226,20 +231,51 @@
             this.label3.TabIndex = 15;
             this.label3.Text = "label3";
             // 
+            // maxColorFormButton
+            // 
+            this.maxColorFormButton.Location = new System.Drawing.Point(747, 69);
+            this.maxColorFormButton.Name = "maxColorFormButton";
+            this.maxColorFormButton.Size = new System.Drawing.Size(45, 23);
+            this.maxColorFormButton.TabIndex = 18;
+            this.maxColorFormButton.Text = "RGBA";
+            this.maxColorFormButton.UseVisualStyleBackColor = true;
+            this.maxColorFormButton.Click += new System.EventHandler(this.maxColorFormButton_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(631, 74);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(77, 13);
+            this.label4.TabIndex = 17;
+            this.label4.Text = "Threshold Max";
+            // 
+            // maxColorButton
+            // 
+            this.maxColorButton.Location = new System.Drawing.Point(718, 67);
+            this.maxColorButton.Name = "maxColorButton";
+            this.maxColorButton.Size = new System.Drawing.Size(23, 23);
+            this.maxColorButton.TabIndex = 16;
+            this.maxColorButton.UseVisualStyleBackColor = true;
+            this.maxColorButton.Click += new System.EventHandler(this.maxColorButton_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(804, 633);
+            this.Controls.Add(this.maxColorFormButton);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.maxColorButton);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.scaleX);
             this.Controls.Add(this.scaleY);
             this.Controls.Add(this.tiledTextureToggle);
             this.Controls.Add(this.alphaOnlyToggle);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.minColorFormButton);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.colorButton);
+            this.Controls.Add(this.minColorButton);
             this.Controls.Add(this.createResultButton);
             this.Controls.Add(this.resultBox);
             this.Controls.Add(this.saveResultButton);
@@ -270,10 +306,10 @@
         private System.Windows.Forms.Button saveResultButton;
         private System.Windows.Forms.Button createResultButton;
         private System.Windows.Forms.Timer timer1;
-        private System.Windows.Forms.ColorDialog colorDialog;
+        private System.Windows.Forms.ColorDialog minColorDialog;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button colorButton;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button minColorButton;
+        private System.Windows.Forms.Button minColorFormButton;
         private System.Windows.Forms.CheckBox alphaOnlyToggle;
         private System.Windows.Forms.CheckBox tiledTextureToggle;
         private System.Windows.Forms.TextBox scaleY;
@@ -281,6 +317,10 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.OpenFileDialog openResultDialog;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button maxColorFormButton;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button maxColorButton;
+        private System.Windows.Forms.ColorDialog maxColorDialog;
     }
 }
 

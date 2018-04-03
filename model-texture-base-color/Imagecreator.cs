@@ -17,7 +17,8 @@ namespace model_texture_base_color
 
 
         public bool alphaOnly;
-        public Color threshold;
+        public Color minThreshold;
+        public Color maxThreshold;
         public bool tiled;
         public double xScale;
         public double yScale;
@@ -34,10 +35,11 @@ namespace model_texture_base_color
         private Bitmap resultImage;
         public Bitmap Result { get => this.resultImage; }
 
-        public Imagecreator(bool alphaOnly, Color threshold, bool tiled, double xScale, double yScale, Bitmap outLine, Bitmap texture)
+        public Imagecreator(bool alphaOnly, Color minThreshold, Color maxThreshold, bool tiled, double xScale, double yScale, Bitmap outLine, Bitmap texture)
         {
             this.alphaOnly = alphaOnly;
-            this.threshold = threshold;
+            this.minThreshold = minThreshold;
+            this.maxThreshold = maxThreshold;
             this.tiled = tiled;
             this.xScale = xScale;
             this.yScale = yScale;
@@ -126,6 +128,8 @@ namespace model_texture_base_color
 
         private Task imageTask(Size size, Point offset)
         {
+            // try this for extra preformance
+            //https://stackoverflow.com/a/34801225/8479976 
             var rand = new Random(this.randSeeder.Next());
             var outLine2 = new Bitmap(this.outLine);
             var texture2 = new Bitmap(this.texture);
@@ -145,10 +149,9 @@ namespace model_texture_base_color
                         
 
                         Color resultColor;
-                        if (updatePixel(this.alphaOnly, outLineColor, this.threshold))
+                        if (shouldUpdatePixel(this.alphaOnly, outLineColor, this.minThreshold, this.maxThreshold))
                         {
                             resultColor = texturePixel(texture2, rand, xO, yO, this.tiled, this.xScale, this.yScale);
-                            
                         }
                         else
                         {
@@ -167,14 +170,18 @@ namespace model_texture_base_color
                 result.Dispose();
             });
         }
-        private static bool updatePixel(bool alphaOnly, Color outLineColor, Color threshold)
+        private static bool shouldUpdatePixel(bool alphaOnly, Color outLineColor, Color minThreshold, Color maxThreshold)
         {
-            return (alphaOnly
-                ? (outLineColor.A >= threshold.A)
-                : (outLineColor.A >= threshold.A &&
-                    outLineColor.R >= threshold.R &&
-                    outLineColor.G >= threshold.G &&
-                    outLineColor.B >= threshold.B));
+            var aPass = between(outLineColor.A, minThreshold.A, maxThreshold.A);
+            if (alphaOnly) { return aPass; }
+            return aPass &&
+                between(outLineColor.R, minThreshold.R, maxThreshold.R) &&
+                between(outLineColor.G, minThreshold.G, maxThreshold.G) &&
+                between(outLineColor.B, minThreshold.B, maxThreshold.B);
+        }
+        private static bool between(int n, int min, int max)
+        {
+            return min <= n && n <= max;
         }
 
         private static Color texturePixel(Bitmap texture, Random rand, int xIn, int yIn, bool tiled, double xScale = 1, double yScale = 1)

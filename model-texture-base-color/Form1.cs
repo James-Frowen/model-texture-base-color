@@ -25,7 +25,8 @@ namespace model_texture_base_color
         private Bitmap texture;
         private Bitmap result;
 
-        public ColorForm colorForm;
+        public ColorForm minColorForm;
+        public ColorForm maxColorForm;
         private Imagecreator creator;
         int ms;
 
@@ -44,7 +45,12 @@ namespace model_texture_base_color
             checkCreatebuttonEnabled();
             checkSavebuttonEnabled();
 
-            this.setButtonColor();
+            this.minColorForm = new ColorForm(this.minColorButton);
+            this.maxColorForm = new ColorForm(this.maxColorButton);
+            this.minColorDialog.Color = Color.DarkGray;
+            this.maxColorDialog.Color = Color.White;
+            setButtonColor(this.minColorButton, this.minColorDialog);
+            setButtonColor(this.maxColorButton, this.maxColorDialog);
         }
         private static void setupDialogs(FileDialog dialog, string title = "Select File")
         {
@@ -100,12 +106,13 @@ namespace model_texture_base_color
             this.resultBox.Image = this.loading;
 
             bool alphaOnly = this.alphaOnlyToggle.Checked;
-            Color threshold = this.colorButton.BackColor;
+            Color minThreshold = this.minColorButton.BackColor;
+            Color maxThreshold = this.maxColorButton.BackColor;
             bool tiled = this.tiledTextureToggle.Checked;
             double xScale = double.Parse(this.scaleX.Text);
             double yScale = double.Parse(this.scaleY.Text);
 
-            this.creator = new Imagecreator(alphaOnly, threshold, tiled, xScale, yScale, this.outline, this.texture);
+            this.creator = new Imagecreator(alphaOnly, minThreshold, maxThreshold, tiled, xScale, yScale, this.outline, this.texture);
             
             this.timer1.Start();
             this.creator.Start();
@@ -172,31 +179,38 @@ namespace model_texture_base_color
             }
         }
 
-        private void colorButton_Click(object sender, EventArgs e)
+        private void minColorButton_Click(object sender, EventArgs e)
         {
-            if (this.colorDialog.ShowDialog() == DialogResult.OK)
+            if (this.minColorDialog.ShowDialog() == DialogResult.OK)
             {
-                this.setButtonColor();
+                setButtonColor(this.minColorButton, this.minColorDialog);
             }
         }
 
-        private void setButtonColor()
+        private static void setButtonColor(Button btn, ColorDialog dialog)
         {
-            this.colorButton.BackColor = this.colorDialog.Color;
-            this.colorButton.ForeColor = this.colorDialog.Color;
+            btn.BackColor = dialog.Color;
+            btn.ForeColor = dialog.Color;
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void minColorFormButton_Click(object sender, EventArgs e)
         {
-            if (this.colorForm == null)
+            this.minColorForm.Show();
+            this.minColorForm.Focus();
+        }
+
+        private void maxColorButton_Click(object sender, EventArgs e)
+        {
+            if (this.maxColorDialog.ShowDialog() == DialogResult.OK)
             {
-                this.colorForm = new ColorForm(this, this.colorButton);
-                this.colorForm.Show();
+                setButtonColor(this.maxColorButton, this.maxColorDialog);
             }
-            else
-            {
-                this.colorForm.Focus();
-            }
+        }
+
+        private void maxColorFormButton_Click(object sender, EventArgs e)
+        {
+            this.maxColorForm.Show();
+            this.maxColorForm.Focus();
         }
     }
 }
