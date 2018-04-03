@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -13,24 +14,27 @@ namespace model_texture_base_color
 {
     public partial class Form1 : Form
     {
-        const byte OUTLINE_THRESHOLD = 100;
         const string LOAD_FORMATS = "Image Files(*.PNG;*.BMP;*.JPG;*.GIF)|*.PNG;*.BMP;*.JPG;*.GIF|All files (*.*)|*.*";
         const string SAVE_FORMATS = "PNG Image|*.png|JPeg Image|*.jpg|Bitmap Image|*.bmp|Gif Image|*.gif";
 
-        readonly Image loading = Properties.Resources.LoadingImage;
+        private readonly Image loading = Properties.Resources.LoadingImage;
 
-        Random rand = new Random();
-        Bitmap outLine;
-        Bitmap texture;
-        Bitmap result;
+        private string outlinePath;
+        private Bitmap outline;
+        private string texturePath;
+        private Bitmap texture;
+        private Bitmap result;
 
-        bool resultTaskFinished;
+        public ColorForm colorForm;
+        private Imagecreator creator;
+        int ms;
 
         public Form1()
         {
             InitializeComponent();
             setupDialogs(this.openOutlineDialog, "Open Outline Image");
             setupDialogs(this.openTextureDialog, "Open Texture Image");
+            setupDialogs(this.openResultDialog, "Open Texture Image");
             setupDialogs(this.saveOutputDialog, "Save Result Image");
 
             setupPictureBox(this.outlineBox);
@@ -39,6 +43,8 @@ namespace model_texture_base_color
 
             checkCreatebuttonEnabled();
             checkSavebuttonEnabled();
+
+            this.setButtonColor();
         }
         private static void setupDialogs(FileDialog dialog, string title = "Select File")
         {
@@ -60,7 +66,7 @@ namespace model_texture_base_color
 
         private void checkCreatebuttonEnabled()
         {
-            this.createResultButton.Enabled = this.outLine != null && this.texture != null;
+            this.createResultButton.Enabled = this.outline != null && this.texture != null;
         }
         private void checkSavebuttonEnabled()
         {
@@ -71,8 +77,9 @@ namespace model_texture_base_color
         {
             if (this.openOutlineDialog.ShowDialog() == DialogResult.OK)
             {
-                this.outLine = new Bitmap(this.openOutlineDialog.FileName);
-                this.outlineBox.Image = this.outLine;
+                this.outlinePath = this.openOutlineDialog.FileName;
+                this.outline = new Bitmap(this.outlinePath);
+                this.outlineBox.Image = this.outline;
                 checkCreatebuttonEnabled();
             }
         }
@@ -81,7 +88,8 @@ namespace model_texture_base_color
         {
             if (this.openTextureDialog.ShowDialog() == DialogResult.OK)
             {
-                this.texture = new Bitmap(this.openTextureDialog.FileName);
+                this.texturePath = this.openTextureDialog.FileName;
+                this.texture = new Bitmap(this.texturePath);
                 this.textureBox.Image = this.texture;
                 checkCreatebuttonEnabled();
             }
@@ -91,52 +99,31 @@ namespace model_texture_base_color
         {
             this.resultBox.Image = this.loading;
 
-            this.resultTaskFinished = false;
-            Task task = new Task(() =>
-            {
-                this.result = new Bitmap(this.outLine);
+            bool alphaOnly = this.alphaOnlyToggle.Checked;
+            Color threshold = this.colorButton.BackColor;
+            bool tiled = this.tiledTextureToggle.Checked;
+            double xScale = double.Parse(this.scaleX.Text);
+            double yScale = double.Parse(this.scaleY.Text);
 
-                var width = this.result.Width;
-                var height = this.result.Height;
-                for (int x = 0; x < width; x++)
-                {
-                    for (int y = 0; y < height; y++)
-                    {
-                        var outLineColor = this.outLine.GetPixel(x, y);
-                        if (outLineColor.A > OUTLINE_THRESHOLD)
-                        {
-                            this.result.SetPixel(x, y, texturePixel(x, y));
-                        }
-                    }
-                }
-
-                this.resultBox.Image = this.result;
-                this.resultTaskFinished = true;
-            });
+            this.creator = new Imagecreator(alphaOnly, threshold, tiled, xScale, yScale, this.outline, this.texture);
+            
             this.timer1.Start();
-            task.Start();
+            this.creator.Start();
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            if (this.resultTaskFinished)
+            this.ms += this.timer1.Interval;
+            this.label3.Text = this.ms.ToString();
+            if (this.creator.Finished)
             {
+                this.result = this.creator.Result;
+                this.resultBox.Image = this.result;
                 this.checkSavebuttonEnabled();
                 this.timer1.Stop();
+                this.creator = null;
+                this.ms = 0;
             }
-        }
-
-        private Color texturePixel(int xIn, int yIn)
-        {
-            //var x = xIn % this.texture.Width;
-            //var y = yIn % this.texture.Height;
-
-            // add tiled or other methods here?
-
-            return this.texture.GetPixel(
-                this.rand.Next(this.texture.Width),
-                this.rand.Next(this.texture.Height)
-            );
         }
 
         private void saveResultButton_Click(object sender, EventArgs e)
@@ -164,7 +151,51 @@ namespace model_texture_base_color
 
                 }
 
+                if (fileName == this.texturePath)
+                {
+                    this.texture.Dispose();
+                    this.texture = null;
+                    this.textureBox.Image = null;
+                    this.texturePath = "";
+                    checkCreatebuttonEnabled();
+                }
+                else if (fileName == this.outlinePath)
+                {
+                    this.outline.Dispose();
+                    this.outline = null;
+                    this.outlineBox.Image = null;
+                    this.outlinePath = "";
+                    checkCreatebuttonEnabled();
+                }
+
                 this.result.Save(fileName, format);
+            }
+        }
+
+        private void colorButton_Click(object sender, EventArgs e)
+        {
+            if (this.colorDialog.ShowDialog() == DialogResult.OK)
+            {
+                this.setButtonColor();
+            }
+        }
+
+        private void setButtonColor()
+        {
+            this.colorButton.BackColor = this.colorDialog.Color;
+            this.colorButton.ForeColor = this.colorDialog.Color;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (this.colorForm == null)
+            {
+                this.colorForm = new ColorForm(this, this.colorButton);
+                this.colorForm.Show();
+            }
+            else
+            {
+                this.colorForm.Focus();
             }
         }
     }
